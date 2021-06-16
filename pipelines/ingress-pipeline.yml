@@ -1,0 +1,64 @@
+trigger:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - kubernetes/ingressmanifests
+
+variables:
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+  # created by terraform, the service connection created by environment only allows 1 namespace
+  k8sServiceConnection: 'Kubernetes'
+
+
+jobs:
+- job: Deploy
+  displayName: Deploy
+  pool:
+    vmImage: $(vmImageName)
+  # could validate if yaml is valid here
+  steps:
+    - task: KubernetesManifest@0
+      displayName: Deploy external dns
+      inputs:
+        action: deploy
+        manifests: |
+          kubernetes/ingressmanifests/dns-secret.yml
+          kubernetes/ingressmanifests/external-dns.yml
+        kubernetesServiceConnection: $(k8sServiceConnection)
+        namespace: default
+    - task: KubernetesManifest@0
+      displayName: Deploy cert manager system roles
+      inputs:
+        action: deploy
+        manifests: |
+          kubernetes/ingressmanifests/cert-manager-kube-system.yml
+        kubernetesServiceConnection: $(k8sServiceConnection)
+        namespace: kube-system
+    - task: KubernetesManifest@0
+      displayName: Deploy cert manager
+      inputs:
+        action: deploy
+        manifests: |
+          kubernetes/ingressmanifests/cert-manager.yml
+        kubernetesServiceConnection: $(k8sServiceConnection)
+        namespace: cert-manager
+    - task: KubernetesManifest@0
+      displayName: Deploy nginx ingress controller
+      inputs:
+        action: deploy
+        manifests: |
+          kubernetes/ingressmanifests/ingress-nginx.yml
+        kubernetesServiceConnection: $(k8sServiceConnection)
+        namespace: ingress-nginx
+    - task: KubernetesManifest@0
+      displayName: Deploy nginx ingress config
+      inputs:
+        action: deploy
+        manifests: |
+          kubernetes/ingressmanifests/cluster-issuer.yml
+          kubernetes/ingressmanifests/ingress.yml
+        kubernetesServiceConnection: $(k8sServiceConnection)
+        namespace: default

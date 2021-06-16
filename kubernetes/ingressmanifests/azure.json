@@ -1,0 +1,7 @@
+{
+  "tenantId": "",
+  "subscriptionId": "",
+  "resourceGroup": "aks-devops-we",
+  "useManagedIdentityExtension": true,
+  "userAssignedIdentityID": "<client id of managed identity>"
+}

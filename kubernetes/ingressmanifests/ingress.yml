@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress-service
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  rules:
+  - host: demo.aks.briefbytes.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: goapp-svc
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - demo.aks.briefbytes.com
+    secretName: demo-aks-briefbytes-secret
